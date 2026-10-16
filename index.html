@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>保健 振り返り小テスト</title>
+<style>
+:root{--bg:#fff;--fg:#222;--card:#f2f5fa;--line:#c9d3e3;--main:#1f3a5f;--ok:#1b7f4b;--ng:#c0392b;--btn:#1f3a5f;--btnfg:#fff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14181f;--fg:#eceff4;--card:#1f2630;--line:#38445a;--main:#9ec1f0;--ok:#5ad08f;--ng:#ff8a7a;--btn:#9ec1f0;--btnfg:#14181f}}
+:root[data-theme="dark"]{--bg:#14181f;--fg:#eceff4;--card:#1f2630;--line:#38445a;--main:#9ec1f0;--ok:#5ad08f;--ng:#ff8a7a;--btn:#9ec1f0;--btnfg:#14181f}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--fg);font:18px/1.7 "Hiragino Sans","Yu Gothic",sans-serif}
+main{max-width:760px;margin:0 auto;padding:16px}
+h1{font-size:26px;color:var(--main);margin:8px 0}
+.tabs{display:flex;gap:8px;margin:12px 0}
+.tabs button{flex:1;padding:14px;font-size:20px;border:2px solid var(--main);background:var(--bg);color:var(--main);border-radius:12px;font-weight:700}
+.tabs button.on{background:var(--btn);color:var(--btnfg)}
+input[type=text],textarea{width:100%;box-sizing:border-box;font:inherit;padding:10px;border:2px solid var(--line);border-radius:10px;background:var(--bg);color:var(--fg)}
+.q{background:var(--card);border-radius:14px;padding:14px;margin:14px 0}
+.q h2{font-size:19px;margin:0 0 8px}
+.q h2 b{color:var(--main)}
+.opt{display:block;padding:12px;margin:6px 0;border:2px solid var(--line);border-radius:10px;background:var(--bg);cursor:pointer}
+.opt input{margin-right:8px;transform:scale(1.3)}
+.row{display:flex;gap:8px}.row .opt{flex:1;text-align:center}
+.fb{margin-top:8px;font-weight:700}.fb.ok{color:var(--ok)}.fb.ng{color:var(--ng)}
+.ex{font-size:16px;margin-top:4px}
+button.main{width:100%;padding:16px;font-size:20px;font-weight:700;border:0;border-radius:12px;background:var(--btn);color:var(--btnfg);margin:8px 0}
+button.sub{background:var(--bg);color:var(--main);border:2px solid var(--main)}
+#res{display:none;background:var(--card);border-radius:14px;padding:14px;margin:14px 0;border:2px solid var(--main)}
+#score{font-size:32px;font-weight:700;color:var(--main)}
+</style>
+</head>
+<body>
+<main>
+<h1>保健　振り返り小テスト</h1>
+<div class="tabs"><button id="t_alc">飲酒と健康</button><button id="t_drg">薬物乱用と健康</button></div>
+<label>名前(クラス・番号も)<input type="text" id="nm" placeholder="例:1年2組 15番 山田太郎"></label>
+<div id="qs"></div>
+<button class="main" id="go">答え合わせをする</button>
+<div id="res">
+<div id="score"></div>
+<p id="note"></p>
+<p>先生に出すときは、下の文章をコピーして、クラスルームに貼ってください。</p>
+<textarea id="out" rows="6" readonly></textarea>
+<button class="main" id="cp">結果をコピーする</button>
+<button class="main sub" id="rt">もう一度やる</button>
+</div>
+</main>
+<script>
+const MK=['ア','イ','ウ','エ'],TF=['○','×'];
+const D={
+alc:{t:'飲酒と健康',q:[
+{k:'f',q:'アルコールは、脳の働きをにぶらせることから、「脳の( )薬」と言われます。',a:['麻酔','麻酔薬'],s:'麻酔',e:'アルコールは脳を麻酔のような状態にします。'},
+{k:'c',q:'お酒を飲んだとき、すぐに起こりやすいことは?',o:['判断力が下がり、転倒や交通事故につながる','頭がよくなり、集中力が上がる','体が強くなり、けがをしにくくなる','血圧が必ず下がり、体調がよくなる'],a:0,e:'判断力の低下で、転倒や事故が起こりやすくなります。'},
+{k:'c',q:'長く飲み続けたときに起こりやすい病気は?',o:['肝硬変','身長がのびる','運動能力が高まる','記憶力がよくなる'],a:0,e:'肝硬変のほか、高血圧・糖尿病、食道がん、脳の萎縮などがあります。'},
+{k:'f',q:'急性アルコール中毒になると、呼吸をつかさどる「( )」がまひして、命の危険があります。',a:['脳幹'],s:'脳幹',e:'脳幹がまひすると、呼吸が止まることがあります。'},
+{k:'t',q:'妊娠中の女性が飲酒しても、おなかの赤ちゃんには影響がない。',a:1,e:'妊婦の飲酒は、胎児に悪い影響をあたえます。'},
+{k:'c',q:'先輩から「イッキ飲みしろ」と強要されたとき、いちばん適切な行動は?',o:['場の空気を悪くしないよう、がまんして飲む','はっきりと断り、むずかしいときは信頼できる大人に相談する','少しだけなら、と一口だけ飲む','友だちに代わりに飲んでもらう'],a:1,e:'イッキ飲みの強要は命をうばう行為。はっきり断りましょう。'},
+{k:'w',q:'20歳未満の飲酒が禁止されている理由を、「脳」と「依存症」ということばを使って、2つ書きましょう。',s:'①発達中の脳と体を守るため。②依存症になるリスクが、大人より何倍も高いため。'},
+{k:'f',q:'テレビCMなどの広告は、お酒の「( )面」しか見せていない広告です。',a:['良い','よい','いい','良'],s:'良い',e:'CMは健康リスクを語りません。事実で判断しましょう。'},
+{k:'t',q:'飲酒の被害は、飲んだ本人だけで終わり、家族や社会には影響しない。',a:1,e:'暴力、家庭崩壊、失業、飲酒運転の事故など、被害は広がります。'},
+{k:'c',q:'アルコール依存症の説明として、正しいものは?',o:['意志が弱い人だけがなる','脳の回路に異常が起き、やめたくてもやめられなくなる','一度なっても、時間がたてば自然に治る','お酒に強い人は、ならない'],a:1,e:'脳の回路の異常で、やめたくてもやめられなくなる状態です。'}]},
+drg:{t:'薬物乱用と健康',q:[
+{k:'f',q:'違法な薬物を使うことや、医薬品を決められた使い方以外で使うことを、「薬物( )」と言います。',a:['乱用'],s:'乱用',e:'違法薬物の使用と、医薬品の目的外の使用を合わせて「薬物乱用」です。'},
+{k:'c',q:'薬物乱用に当てはまるものは?',o:['医師の指示どおりに薬を飲む','かぜ薬を、決められた量より多く飲む','薬局で説明を受けて、薬を使う','説明書を読んでから薬を飲む'],a:1,e:'身近なかぜ薬も、飲みすぎれば「乱用」になります。'},
+{k:'t',q:'法律で禁止された薬物を使うことだけが、薬物乱用である。',a:1,e:'医薬品の目的外の使用も薬物乱用です。'},
+{k:'c',q:'薬物が脳や体にあたえる影響として、正しいものは?',o:['幻覚が見えたり、人格がこわれたりすることがある','脳が強くなり、勉強ができるようになる','体が健康になり、病気にかかりにくくなる','影響は、使ったあとすぐになくなる'],a:0,e:'薬物は脳を直接こわし、深刻なダメージをあたえます。'},
+{k:'t',q:'薬物は、たった1回の使用でも、命を落とすことがある。',a:0,e:'「1回だけなら大丈夫」ということはありません。'},
+{k:'f',q:'薬物を使い続けると、やめたくてもやめられなくなる状態になります。これを「( )症」といいます。',a:['依存'],s:'依存',e:'やめたくてもやめられなくなる状態が「依存症」です。'},
+{k:'w',q:'薬物乱用が引き起こす「負の連鎖」を、「依存」「犯罪組織」ということばを使って、順番に説明しましょう。',s:'依存症になり、生活が薬物中心になって夢や家族への関心が消え、薬物を買うお金が犯罪組織の資金源になる。'},
+{k:'c',q:'薬物に手を出すきっかけとして、授業で学んだものは?',o:['好奇心や、まわりからの誘い','医師から勧められたこと','学校の授業で習ったこと','運動の練習の一部として必要なこと'],a:0,e:'きっかけは、好奇心と、まわりからの誘いが多いです。'},
+{k:'c',q:'SNSでさそわれたり、「大麻は安全」という情報を見たりしたときの対応は?',o:['みんなが言っているので、本当だと信じる','きっぱり断り、信頼できる大人に相談する','一度だけなら大丈夫なので、ためしてみる','断ると友だちをなくすので、さそいに乗る'],a:1,e:'「大麻は安全」はウソです。断って相談しましょう。'},
+{k:'f',q:'薬物乱用を防ぐ「2つの壁」のうち、法律や警察、医療機関の支えは、外側の壁である「( )」です。',a:['社会'],s:'社会',e:'内側の壁(自分)と外側の壁(社会)で、薬物乱用を防ぎます。'}]}};
+let cur='alc',done=false;
+const $=i=>document.getElementById(i);
+const norm=s=>(s||'').replace(/[\s　()()]/g,'');
+function render(){
+ done=false;$('res').style.display='none';$('go').style.display='';
+ $('t_alc').className=cur=='alc'?'on':'';$('t_drg').className=cur=='drg'?'on':'';
+ $('qs').innerHTML=D[cur].q.map((q,i)=>{
+  let b='<div class="q" id="q'+i+'"><h2><b>問'+(i+1)+'</b>　'+q.q+'</h2>';
+  if(q.k=='c')b+=q.o.map((o,j)=>'<label class="opt"><input type="radio" name="a'+i+'" value="'+j+'">'+MK[j]+'　'+o+'</label>').join('');
+  if(q.k=='t')b+='<div class="row">'+TF.map((o,j)=>'<label class="opt"><input type="radio" name="a'+i+'" value="'+j+'">'+o+'</label>').join('')+'</div>';
+  if(q.k=='f')b+='<input type="text" id="a'+i+'" placeholder="答えを入力" autocomplete="off">';
+  if(q.k=='w')b+='<textarea id="a'+i+'" rows="4" placeholder="自分のことばで書きましょう"></textarea>';
+  return b+'<div class="fb" id="f'+i+'"></div></div>';}).join('');
+}
+function ans(i,q){
+ if(q.k=='c'||q.k=='t'){const r=document.querySelector('input[name=a'+i+']:checked');return r?+r.value:null}
+ return $('a'+i).value.trim();}
+$('go').onclick=()=>{
+ let sc=0,tot=0,wr='',lines=[];
+ D[cur].q.forEach((q,i)=>{
+  const v=ans(i,q),f=$('f'+i);
+  if(q.k=='w'){wr=v;lines.push('－');f.className='fb';f.innerHTML='<div class="ex">例:'+q.s+'<br>(先生が採点します。自分の答えとくらべてみよう)</div>';return}
+  tot+=10;
+  const ok=q.k=='f'?q.a.map(norm).includes(norm(v)):v===q.a;
+  lines.push(ok?'○':'×');if(ok)sc+=10;
+  const right=q.k=='c'?MK[q.a]+'　'+q.o[q.a]:q.k=='t'?TF[q.a]:q.s;
+  f.className='fb '+(ok?'ok':'ng');
+  f.innerHTML=(ok?'○ 正解!':'× 正解は「'+right+'」')+'<div class="ex">'+q.e+'</div>';});
+ $('score').textContent=sc+' / '+tot+' 点';
+ $('note').textContent='記述の問7は、先生が採点します。';
+ const w=D[cur].q.findIndex(q=>q.k=='w')+1;
+ $('out').value='【保健 小テスト】'+D[cur].t+'\n名前:'+($('nm').value||'(未入力)')+'\n自動採点:'+sc+' / '+tot+'点\n問'+w+'(記述):'+(wr||'(未回答)')+String.fromCharCode(10)+'正誤:'+lines.join('');
+ $('res').style.display='block';$('go').style.display='none';done=true;
+ $('res').scrollIntoView({behavior:'smooth'});};
+$('cp').onclick=async()=>{
+ const t=$('out');
+ try{await navigator.clipboard.writeText(t.value);$('cp').textContent='コピーしました'}
+ catch(e){t.removeAttribute('readonly');t.focus();t.select();$('cp').textContent='文章を選択しました。「コピー」を押してください'}
+ setTimeout(()=>{$('cp').textContent='結果をコピーする'},3000)};
+$('rt').onclick=()=>{render();window.scrollTo({top:0,behavior:'smooth'})};
+$('t_alc').onclick=()=>{cur='alc';render()};
+$('t_drg').onclick=()=>{cur='drg';render()};
+render();
+</script>
+</body>
+</html>
